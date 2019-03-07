@@ -5,7 +5,7 @@ class LinearRegression():
     def __init__(self, X, y):
         self.X = X
         self.y = y
-        self.optimize = {"Adagrad": self._Adagrad, "Adam": self._Adam, "ClosedForm": self._ClosedForm}
+        self.optimize = {"Adagrad": self._Adagrad, "Adam": self._Adam, "ClosedForm": self._ClosedForm, "AdamAndDraw": self._AdamAndDraw,}
 
     def GradientDescent(self, optimizer="ClosedForm", **kwargs):
         return self.optimize[optimizer](**kwargs)
@@ -101,6 +101,42 @@ class LinearRegression():
         print(self._GetRMSE(loss, size))
 
         return np.append(b, w)
+
+    def _AdamAndDraw(self, lr=0.0001, epoch=10000, beta_one=0.9, beta_two=0.999, epsilon=1e-8, lambda_=0):
+        size, dim = self.X.shape
+
+        b = 0.0
+        w = np.zeros(dim)
+        
+        Vb = 0.0    # Momentum for b
+        Sb = 0.0    # RMSprop for b
+        Vw = np.zeros(dim)   # Momentum for w
+        Sw= np.zeros(dim)   # RMSprop   for w
+        RMSE = []
+
+        for i in range(epoch):
+            predict_y = np.dot(self.X, w) + b
+            loss = predict_y - self.y
+            
+            b_grad = 2 * np.sum(loss)
+            w_grad = 2 * np.dot(self.X.T, loss) + lambda_ * 2 * w
+
+            Vb = beta_one * Vb + (1 - beta_one) * b_grad
+            Sb = beta_two * Sb + (1 - beta_two) * (b_grad ** 2)
+            Vw = beta_one * Vw + (1 - beta_one) * w_grad
+            Sw = beta_two * Sw + (1 - beta_two) * (w_grad ** 2)
+
+            Vb_hat = Vb / (1 - pow(beta_one, i+1))
+            Sb_hat = Sb / (1 - pow(beta_two, i+1))
+            Vw_hat = Vw / (1 - pow(beta_one, i+1))
+            Sw_hat = Sw / (1 - pow(beta_two, i+1))
+
+            b -= lr * Vb_hat / (np.sqrt(Sb_hat) + epsilon)
+            w -= lr * Vw_hat / (np.sqrt(Sw_hat) + epsilon)
+            
+            RMSE.append(self._GetRMSE(loss, size))
+
+        return RMSE
 
     def _GetRMSE(self, loss, data_size):
         return np.sqrt(np.sum(loss ** 2) / data_size)
