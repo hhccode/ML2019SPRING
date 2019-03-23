@@ -19,10 +19,6 @@ def extract_features(normalization):
             for j in [0,1,3,4,5]:
                 X[i][j] = (X[i][j] - MIN[j]) / (MAX[j] - MIN[j])
 
-        for j in [0,1,3,4,5]:
-            X = np.hstack((X, np.array([X[:,j]**2]).T))
-            X = np.hstack((X, np.log([X[:, j]+1e-10]).T))
-
         X = np.hstack((np.ones((len(X),1)), X))
 
     training_X = np.array(X)
@@ -48,10 +44,6 @@ def extract_features(normalization):
             for j in [0,1,3,4,5]:
                 X[i][j] = (X[i][j] - MIN[j]) / (MAX[j] - MIN[j])
 
-        for j in [0,1,3,4,5]:
-            X = np.hstack((X, np.array([X[:,j]**2]).T))
-            X = np.hstack((X, np.log([X[:, j]+1e-10]).T))
-
         X = np.hstack((np.ones((len(X),1)), X))
     
     testing_X = np.array(X)
@@ -65,10 +57,10 @@ def sigmoid(z):
 if __name__ == "__main__":
     
     training_X, training_y, testing_X = extract_features(normalization=True)
-    
+
     model = LogisticRegression(training_X, training_y)
 
-    weight = model.GradientDescent()
+    weight = model.GradientDescent(optimizer="Adagrad")
 
     testing_y = sigmoid(np.dot(testing_X, weight))
 

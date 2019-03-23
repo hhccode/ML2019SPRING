@@ -60,15 +60,13 @@ def sigmoid(z):
 if __name__ == "__main__":
     
     training_X, training_y, testing_X = extract_features(normalization=True)
-    
-    N, dimension = training_X.shape
 
     model = LogisticRegression(training_X, training_y)
+
     weight = model.GradientDescent()
 
     testing_y = sigmoid(np.dot(testing_X, weight))
 
-    
     with open("output.csv", "w") as f:
         print("id,label", file=f)
         for i in range(testing_y.shape[0]):

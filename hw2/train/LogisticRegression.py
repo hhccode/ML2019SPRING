@@ -28,10 +28,10 @@ class LogisticRegression():
             w -= lr * w_grad / (np.sqrt(w_GRAD) + 0.0005)
             
             if i % 500 == 0:
-                print("Iteration=", i)
+                print("Iteration = {}, Lambda = {}".format(i, lambda_))
                 print(self._GetAcc(predict_y, size))
                 
-        print("Iteration=", epoch)
+        print("Iteration = {}, Lambda = {}".format(epoch, lambda_))
         print(self._GetAcc(predict_y, size))
 
         return w
