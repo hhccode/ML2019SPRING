@@ -31,6 +31,7 @@ if __name__ == "__main__":
 
     if not os.path.exists(sys.argv[1]):
         os.makedirs(sys.argv[1], exist_ok=True)
+    smooth_orig = sys.argv[2]
 
     dataset = MyDataset.ImageDataset(img_dir="./hw5_data/images", label_path="./labels.npy", transform=transform)
     loader = DataLoader(dataset)
@@ -44,7 +45,7 @@ if __name__ == "__main__":
     EPSILON = 0.01
     ITER = 4
     
-    sigma = 2
+    sigma = 1
     kernel_size = 5
     mid = kernel_size // 2
     x, y = np.mgrid[-mid:mid+1, -mid:mid+1]
@@ -57,20 +58,21 @@ if __name__ == "__main__":
         img = orig
         img.requires_grad = True
         
-        for _ in range(ITER):
-            output = model(img)
-        
-            loss = criterion(output, label)
-            loss.backward()
+        if not smooth_orig:
+            for _ in range(ITER):
+                output = model(img)
+            
+                loss = criterion(output, label)
+                loss.backward()
 
-            sign_grad = img.grad.sign()
-            noise = ALPHA * sign_grad
-            atk_img = img + noise
-            
-            noise = torch.clamp(atk_img-orig, min=-EPSILON, max=EPSILON)
-            img.data = img + noise
-            
-            img.grad.data.zero_()
+                sign_grad = img.grad.sign()
+                noise = ALPHA * sign_grad
+                atk_img = img + noise
+                
+                noise = torch.clamp(atk_img-orig, min=-EPSILON, max=EPSILON)
+                img.data = img + noise
+                
+                img.grad.data.zero_()
             
         atk_img = inv_normalize(img.squeeze(0).detach().cpu().numpy())
         atk_img = np.clip(atk_img, 0.0, 1.0)
