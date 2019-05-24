@@ -8,7 +8,8 @@ from skimage import io
 def read_images(path):
     return io.imread(path).astype(np.float32).flatten()
 
-def transform(img):
+def transform(image):
+    img = image.copy()
     img -= np.min(img)
     img /= np.max(img)
     return (img * 255).astype(np.uint8)
